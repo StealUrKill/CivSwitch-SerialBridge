@@ -103,7 +103,7 @@ Connecting the Switch handheld straight to a Linux box over USB-Ethernet (no doc
 
 ## Moonlight bridge
 
-Want to stream Moonlight from a Sunshine host on your home LAN to an air-gapped Switch? The [Moonlight bridge](moonlight-bridge) routes between the Switch's Wi-Fi and your home LAN through a default-deny firewall, so the Switch reaches only the Sunshine PC and never the internet.
+Want to stream Moonlight from a Sunshine host on your home LAN to an air-gapped Switch? The [Moonlight bridge](moonlight-bridge) routes between the Switch's Wi-Fi and your home LAN through a default-deny firewall, so the Switch reaches only the Sunshine PC and never the internet. It can also forward an FTP port so you can manage the Switch's SD card from your PC without breaking the air-gap.
 
 ## License
 

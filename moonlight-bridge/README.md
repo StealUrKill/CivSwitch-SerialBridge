@@ -137,6 +137,38 @@ sudo ./setup.sh
 5. Moonlight shows a 4-digit PIN. On the Sunshine PC, open the Sunshine web UI (`http://localhost:47990`), go to the **PIN** tab, enter the code, and submit. The Switch is now paired.
 6. Add a game/app and stream.
 
+## FTP to the Switch
+
+You can manage the Switch's SD card from a PC on the home LAN without breaking the air-gap. The Pi DNATs a single port on its uplink interface to the Switch's FTP server on the AP subnet, so the Switch still never touches the internet.
+
+### 1. FTP server on the Switch
+
+Install [sys-ftpd](https://github.com/cathery/sys-ftpd) (runs in the background as a sysmodule) or the `ftpd` homebrew app. Both listen on port **5000** by default (configurable). Note the Switch's IP on the AP (Settings → Internet, or `cat /var/lib/misc/dnsmasq.leases` on the Pi).
+
+### 2. Open the port on the Pi
+
+```sh
+sudo ./setup-ftp-forward.sh 192.168.4.24 5000
+```
+
+Omit the args to target `192.168.4.2` on port `5000`. The script adds a DNAT rule and a matching forward-allow rule to the existing `moonlight_bridge` table, then installs a systemd service that re-applies them on every boot (the air-gap firewall rebuilds its table each boot). The forward only opens that one inbound port — the FORWARD policy is still `drop`, so the Switch still can't reach the internet.
+
+### 3. Connect from the PC
+
+| Setting | Value |
+|---|---|
+| Host | the Pi's **LAN** IP — `ip -4 addr show eth0` on the Pi (not the Switch's `192.168.4.x`) |
+| Port | the FTP port you forwarded (e.g. `5000`) |
+| User / Pass | whatever sys-ftpd is set to (blank if anonymous) |
+
+### ⚠️ Use ACTIVE mode, not passive
+
+Only the FTP *control* port is forwarded. In passive mode the server picks a random *data* port and advertises the Switch's unroutable `192.168.4.x` address, so directory listings hang. Use **active** mode instead — the server connects back to your client over the existing Switch→LAN path, so only the control port needs forwarding.
+
+In FileZilla: **Site Manager → (your site) → Transfer Settings → Active**. Allow FileZilla through the Windows firewall when prompted.
+
+> Not a 90DNS setup? Right — this bridge blocks Nintendo with a catch-all DNS + default-deny firewall, not 90DNS's `0.0.0.0` DNS trick. So a "90DNS Tester"-style app will report Nintendo domains as "unblocked" (DNS resolves them to the Pi's `192.168.4.1`, which isn't `0.0.0.0`). That's expected. To confirm the air-gap, open the eShop on the Switch — it should fail to connect.
+
 ## Config
 
 Edit the block at the top of `setup.sh` and re-run it to change network settings:
