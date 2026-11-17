@@ -1,5 +1,7 @@
 build/
 .venv/
+.vscode/
 __pycache__/
 *.pyc
 .DS_Store
+pico2w-bridge/build/
